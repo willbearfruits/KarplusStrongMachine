@@ -1,53 +1,47 @@
 #!/bin/bash
+# Build script for Digital Kalimba
 
-echo "========================================="
-echo "  KARPLUS-STRONG MACHINE - BUILD"
-echo "========================================="
+set -e  # Exit on error
+
+echo "🎵 ======================================="
+echo "🎵  Building Digital Kalimba for Daisy"
+echo "🎵 ======================================="
 echo ""
 
-# Check if libDaisy exists
+# Check if libDaisy and DaisySP exist
 if [ ! -d "$HOME/DaisyExamples/libDaisy" ]; then
-    echo "❌ ERROR: libDaisy not found"
+    echo "❌ ERROR: libDaisy not found at $HOME/DaisyExamples/libDaisy"
+    echo "   Please install libDaisy first"
     exit 1
 fi
 
-# Check if DaisySP exists
 if [ ! -d "$HOME/DaisyExamples/DaisySP" ]; then
-    echo "❌ ERROR: DaisySP not found"
+    echo "❌ ERROR: DaisySP not found at $HOME/DaisyExamples/DaisySP"
+    echo "   Please install DaisySP first"
     exit 1
 fi
 
-echo "✓ Found libDaisy"
-echo "✓ Found DaisySP"
+echo "✓ Dependencies found"
 echo ""
 
-# Clean previous build
-echo "Cleaning previous build..."
+# Clean and build
+echo "🧹 Cleaning previous build..."
 make clean
-echo ""
 
-# Build
-echo "Building KarplusStrongMachine.cpp..."
 echo ""
+echo "🔨 Compiling Digital Kalimba..."
 make -j4
 
-# Check if build succeeded
-if [ $? -eq 0 ]; then
-    echo ""
-    echo "========================================="
+echo ""
+if [ -f "build/DigitalKalimba.bin" ]; then
     echo "✅ BUILD SUCCESSFUL!"
-    echo "========================================="
     echo ""
-    ls -lh build/KarplusStrongMachine.bin
+    ls -lh build/DigitalKalimba.bin
     echo ""
-    echo "To upload:"
-    echo "  1. Put Daisy in bootloader mode"
-    echo "  2. Run: ./upload.sh"
+    echo "📊 Binary size: $(du -h build/DigitalKalimba.bin | cut -f1)"
     echo ""
+    echo "Ready to upload! Run: ./upload.sh"
 else
-    echo ""
-    echo "========================================="
-    echo "❌ BUILD FAILED"
-    echo "========================================="
+    echo "❌ Build failed - binary not found"
     exit 1
 fi

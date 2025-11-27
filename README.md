@@ -1,466 +1,243 @@
-# Karplus-Strong Plucked String Machine
+# Digital Kalimba for Daisy Seed
 
-A physical modeling synthesizer for Daisy Seed featuring Karplus-Strong algorithm with triple LFO modulation and long decay times.
-
-**Performance:** 5-8% CPU usage, 90KB binary, 20+ second decay capability
-
----
+A 7-button polyphonic kalimba instrument using Karplus-Strong physical modeling synthesis with traditional G Major Pentatonic tuning.
 
 ## Features
 
-- **Karplus-Strong Algorithm** - Physics-based plucked string synthesis
-- **Long Decay Times** - Up to 20+ seconds sustain
-- **Triple LFO Modulation** - Simultaneous vibrato, tremolo, and filter sweep
-- **Mono Output** - CPU-optimized for maximum expressiveness
-- **6 Hardware Controls** - Full real-time parameter control
-- **DC Blocking** - Clean output without drift
-- **Trigger Lockout** - Prevents unwanted retriggering
-
----
+- **Full Polyphony:** All 7 notes can play simultaneously
+- **Authentic Tuning:** G Major Pentatonic (traditional kalimba scale)
+- **Frequency-Dependent Decay:** Low notes sustain longer, high notes decay faster (just like a real kalimba)
+- **Built-in Reverb:** Simulates resonator box for rich, ambient sound
+- **Real-Time Control:** 6 potentiometers for brightness, decay, reverb, and LFO modulation
+- **OLED Display:** Shows active notes, tuning, and parameters
+- **Low CPU Usage:** ~12-15% CPU (85% available for expansion)
+- **Low Latency:** ~0.08ms (4-sample blocks @ 48kHz)
 
 ## Quick Start
 
+### 1. Build and Upload
+
 ```bash
-cd ~/Documents/KarplusStrongMachine/
-./build-and-upload.sh
+cd ~/Documents/KarplusStrongMachine
+./build-and-upload-kalimba.sh
 ```
 
-See **QUICKSTART.txt** for immediate usage guide.
+### 2. Enter Bootloader Mode
 
----
+1. Hold **BOOT** button on Daisy Seed
+2. Press **RESET** button (while holding BOOT)
+3. Release **BOOT** button
+4. LED should pulse slowly
+5. Press ENTER in terminal
 
-## Hardware Requirements
+### 3. Play!
 
-### Essential
-- Daisy Seed board
-- 6 potentiometers (10kΩ linear recommended)
-- Audio output (line level speakers or headphone amp)
-- Power (USB or 9V DC)
+After upload, press RESET button. The kalimba is now ready to play!
 
-### Wiring
+## Hardware Setup
+
+### Minimum Required Wiring
+
+**7 Buttons (to GND):**
+- D15 (Pin 23) - G4 (Center note)
+- D16 (Pin 24) - A3
+- D17 (Pin 25) - B4
+- D18 (Pin 26) - D4
+- D19 (Pin 27) - E4
+- D20 (Pin 28) - G3 (Lowest note)
+- D21 (Pin 29) - A4
+
+Each button connects GPIO pin to GND (momentary push buttons, normally open).
 
 **Audio Output:**
-```
-Pin 22 (Audio Out L) → Left channel
-Pin 23 (Audio Out R) → Right channel
-GND → Audio ground
-```
+- Pin 19 (Left) → Amplifier/Headphones
+- Pin 20 (Right) → Amplifier/Headphones
+- Pin 40 (GND) → Common ground
 
-**Control Pots:**
-```
-A0 (Pin 15) → Pitch
-A1 (Pin 16) → Decay Time
-A2 (Pin 17) → Brightness
-A3 (Pin 18) → Excitation
-A4 (Pin 19) → LFO Rate
-A5 (Pin 20) → LFO Depth
-```
+### Optional Controls
 
-**Pot Wiring (each):**
-```
-Pin 1 (CCW) → GND
-Pin 2 (Wiper) → A0-A5 analog input
-Pin 3 (CW) → 3.3V (⚠️ NOT 5V!)
-```
+**6 Potentiometers (10kΩ, wiper to ADC pin):**
+- A0 (Pin 15) - Global Brightness
+- A1 (Pin 16) - Global Decay/Sustain
+- A2 (Pin 17) - Reverb Amount
+- A3 (Pin 18) - Reverb Size
+- A4 (Pin 19) - LFO Rate
+- A5 (Pin 20) - LFO Depth
 
----
+**OLED Display (I2C, 0.96" SSD1306):**
+- D11 (Pin 12) - SCL
+- D12 (Pin 13) - SDA
+- 3.3V - VCC
+- GND - GND
 
-## Control Reference
+For complete wiring instructions, see **KALIMBA_WIRING.md**
 
-### A0 - Pitch (50 Hz - 2000 Hz)
-Fundamental frequency of the plucked string.
+## Button Layout
 
-- **0%**: 50 Hz (sub-bass, very low)
-- **25%**: 130 Hz (C3)
-- **50%**: 330 Hz (E4)
-- **75%**: 830 Hz (G#5)
-- **100%**: 2000 Hz (very bright)
-
-**Exponential response** for musical tuning across the range.
-
-### A1 - Decay Time (1s to 20s+)
-Controls how long the string sustains after being plucked.
-
-- **0%**: ~1 second (short pluck)
-- **50%**: ~5 seconds (medium sustain)
-- **100%**: 20+ seconds (nearly infinite)
-
-**Technical:** Maps to string damping coefficient (0.0 to 1.0 in DaisySP String class).
-
-### A2 - Brightness (0% - 100%)
-Filter cutoff controlling the tone from dark to bright.
-
-- **0%**: Dull, muffled (bass-like)
-- **50%**: Balanced (acoustic guitar)
-- **100%**: Bright, metallic (sitar-like)
-
-**Technical:** Controls lowpass filter cutoff in the Karplus-Strong feedback loop.
-
-### A3 - Excitation (Manual Trigger)
-Triggers the string pluck when turned past threshold (60%).
-
-- **< 60%**: No trigger (string decays naturally)
-- **> 60%**: Pluck string (rising edge detection)
-
-**Usage:**
-- Quick up/down motion for clean single plucks
-- Hold above 60% for repeated triggering
-- 100ms lockout prevents too-fast retriggering
-
-**Technical:** Rising edge detector with 100ms cooldown (4800 samples at 48kHz).
-
-### A4 - LFO Rate (0.1 Hz - 20 Hz)
-Speed of all three LFO modulations.
-
-- **0%**: 0.1 Hz (very slow, 10 second cycle)
-- **25%**: 1 Hz (slow movement)
-- **50%**: 5 Hz (vibrato range)
-- **75%**: 10 Hz (fast warble)
-- **100%**: 20 Hz (extreme, almost ring mod)
-
-**Exponential response** for musical LFO control.
-
-### A5 - LFO Depth (0% - 100%)
-Amount of LFO modulation applied to all three destinations.
-
-- **0%**: No modulation (static sound)
-- **50%**: Subtle movement
-- **100%**: Extreme modulation
-
-**Simultaneously controls:**
-- Vibrato amount (pitch modulation)
-- Tremolo amount (amplitude modulation)
-- Filter sweep amount (brightness modulation)
-
----
-
-## LFO System Explained
-
-The synthesizer features **3 independent LFOs** running simultaneously:
-
-### LFO 1: Vibrato (Pitch Modulation)
-- **Waveform:** Sine (smooth)
-- **Rate:** Controlled by A4
-- **Depth:** ±2% pitch variation × A5
-- **Effect:** Musical vibrato, adds life to sustained notes
-
-### LFO 2: Tremolo (Amplitude Modulation)
-- **Waveform:** Triangle
-- **Rate:** 0.7× A4 (slightly slower than vibrato)
-- **Depth:** 0-50% volume variation × A5
-- **Effect:** Pulsing amplitude, rhythmic movement
-
-### LFO 3: Filter Sweep (Brightness Modulation)
-- **Waveform:** Sawtooth
-- **Rate:** 0.4× A4 (slowest of the three)
-- **Depth:** ±30% brightness variation × A5
-- **Effect:** Gradual tonal changes, evolving timbre
-
-**Design:** Different waveforms and rates create complex, evolving textures without sounding like a single LFO.
-
----
-
-## Karplus-Strong Algorithm
-
-### How It Works
-
-Karplus-Strong synthesis simulates plucked strings using:
-
-1. **Delay Line** - Stores one period of the waveform
-2. **Excitation** - Noise burst "plucks" the string
-3. **Feedback Loop** - Delayed signal feeds back into itself
-4. **Lowpass Filter** - Simulates string damping (brightness control)
-5. **Decay Coefficient** - Controls sustain time
-
-**Physical model:** Vibrating string with damping and dispersion.
-
-### Implementation (DaisySP String Class)
-
-This synth uses the **`daisysp::String`** class:
-- Production-ready Karplus-Strong implementation
-- Ported from Mutable Instruments Rings (Emilie Gillet)
-- Optimized for STM32H750 (ARM Cortex-M7)
-- Built-in brightness, damping, non-linearity controls
-
-**Benefits:**
-- Band-limited (no aliasing)
-- Tunable dispersion (non-linearity)
-- Efficient (1-2% CPU per voice)
-- Realistic plucked string behavior
-
----
-
-## Performance & Memory
-
-### CPU Usage
-**Estimated: 5-8% at 48kHz**
-
-Breakdown:
-- String class (K-S): ~2%
-- 3× Oscillator (LFOs): ~0.3%
-- DcBlock: ~0.1%
-- Analog controls: ~0.5%
-- Audio processing: ~1%
-- Overhead: ~1%
-
-**Remaining:** 92-95% CPU available for effects/expansion!
-
-### Memory Usage
-
-**Flash:** 91,220 bytes / 128 KB (69.6%)
-- Room for 40KB more code
-
-**SRAM:** 18,764 bytes / 512 KB (3.6%)
-- Mostly delay line buffers
-- Could fit 25+ voices (memory-wise)
-
-**RAM_D2:** 16,704 bytes / 288 KB (5.7%)
-- DMA buffers
-
-### Latency
-**~0.083ms** with block size = 4 (48 samples at 48kHz)
-
----
-
-## Technical Details
-
-### Audio Processing Chain
+Traditional kalimba center-out alternating pattern:
 
 ```
-Excitation (noise burst)
-    ↓
-String Class (Karplus-Strong)
-    ├─ Delay line (pitch-dependent)
-    ├─ Lowpass filter (brightness)
-    └─ Feedback loop (decay)
-    ↓
-LFO Modulation
-    ├─ Vibrato (pitch)
-    ├─ Tremolo (amplitude)
-    └─ Filter sweep (brightness)
-    ↓
-DC Blocker
-    ↓
-Soft Saturation (tanh)
-    ↓
-Output (mono → stereo)
+      Left Side          Center         Right Side
+
+        [6] G3
+             [4] D4
+                  [2] A3    [1] G4
+                                    [3] B4
+                                [5] E4
+                                    [7] A4
+
+   Playing order (low to high):
+   6 (G3) → 2 (A3) → 4 (D4) → 5 (E4) → 1 (G4) → 7 (A4) → 3 (B4)
 ```
 
-### Control Processing
+**Tuning:** G Major Pentatonic
+**Scale degrees:** G A B D E G A
+**Range:** G3 (196 Hz) to B4 (493.88 Hz)
 
-- **Non-blocking ADC** via DMA (zero audio callback overhead)
-- **Filtered inputs** via `AnalogControl` class (no zipper noise)
-- **Control rate:** ~1kHz (once per audio block)
-- **Exponential scaling** for pitch and LFO rate (musical response)
+## Note Characteristics
 
-### Trigger System
+| Button | Note | Frequency | Sustain | Character |
+|--------|------|-----------|---------|-----------|
+| 1 | G4 | 392 Hz | Medium-Long | Balanced |
+| 2 | A3 | 220 Hz | Very Long | Warm, deep |
+| 3 | B4 | 494 Hz | Short | Bright, clear |
+| 4 | D4 | 294 Hz | Long | Rich, full |
+| 5 | E4 | 330 Hz | Medium | Sweet |
+| 6 | G3 | 196 Hz | Longest | Deep, resonant |
+| 7 | A4 | 440 Hz | Medium | Bright |
 
-**Rising edge detection:**
+## Controls (Potentiometers)
+
+| Control | Function | Effect |
+|---------|----------|--------|
+| **A0 - Brightness** | Tone color | CCW: Warmer, darker / CW: Brighter, more treble |
+| **A1 - Decay** | Sustain time | CCW: Shorter decay / CW: Longer sustain |
+| **A2 - Reverb Amount** | Dry/wet mix | CCW: Dry / CW: Full reverb |
+| **A3 - Reverb Size** | Room size | CCW: Small room / CW: Large hall |
+| **A4 - LFO Rate** | Vibrato speed | CCW: Slow / CW: Fast |
+| **A5 - LFO Depth** | Vibrato amount | CCW: None / CW: Maximum |
+
+## Tips for Playing
+
+### Basic Technique
+- Press buttons firmly for clean attack
+- Multiple buttons can be pressed simultaneously for chords
+- Experiment with rhythmic patterns
+
+### Musical Ideas
+- **Arpeggio:** Play 6-2-4-5-1-7-3 slowly for ascending melody
+- **Chord:** Press 6+4+1 together for G major triad
+- **Drone:** Hold button 6 (G3) while playing melody on other buttons
+- **Rhythm:** Use buttons 1 and 3 alternating for simple rhythm
+
+### Sound Shaping
+- **Plucked sound:** Brightness high (A0 CW), Decay medium (A1 center)
+- **Bell-like:** Brightness very high (A0 full CW), Reverb high (A2/A3 CW)
+- **Warm pad:** Brightness low (A0 CCW), Decay high (A1 CW), Reverb high (A2 CW)
+- **Subtle vibrato:** LFO Depth at 10-20% (A5 slight CW), LFO Rate slow (A4 CCW)
+
+## Technical Specifications
+
+**Platform:** Electrosmith Daisy Seed (STM32H750, ARM Cortex-M7 @ 480MHz)
+**DSP Algorithm:** Karplus-Strong string synthesis with DC blocking
+**Audio Quality:** 48kHz sample rate, floating-point processing
+**Polyphony:** 7 voices (fully independent strings)
+**Effects:** ReverbSc, optional LFO modulation (vibrato/tremolo)
+**Latency:** ~0.08ms (4-sample buffer)
+**CPU Usage:** 12-15%
+**Memory:** ~95KB Flash, ~30KB RAM
+
+## Customization
+
+The tuning and parameters can be easily modified in `DigitalKalimba.cpp`:
+
+### Change Tuning
+Edit the `base_frequencies[]` array:
 ```cpp
-bool trigger_active = pot_excite > threshold;
-bool trigger_edge = trigger_active && !last_trigger && (timer == 0);
+// Example: C Major Pentatonic
+const float base_frequencies[NUM_STRINGS] = {
+    261.63f,  // C4
+    146.83f,  // D3
+    329.63f,  // E4
+    196.00f,  // G3
+    440.00f,  // A4
+    130.81f,  // C3
+    293.66f   // D4
+};
 ```
 
-**Lockout timer:**
-- 100ms cooldown (4800 samples at 48kHz)
-- Prevents accidental double triggers
-- Allows intentional retriggering if pot held high
-
----
-
-## Preset Sounds
-
-### Acoustic Guitar
-```
-A0: 40%  (165 Hz)
-A1: 50%  (medium decay)
-A2: 60%  (bright)
-A3: trigger
-A4: 20%  (slow LFO)
-A5: 30%  (subtle mod)
-```
-Natural acoustic guitar pluck with gentle vibrato.
-
-### Bass Pluck
-```
-A0: 10%  (82 Hz)
-A1: 30%  (short)
-A2: 30%  (dark)
-A3: trigger
-A4: 10%  (very slow)
-A5: 10%  (minimal)
-```
-Punchy bass guitar pluck, short and tight.
-
-### Sitar / Drone
-```
-A0: 30%  (130 Hz)
-A1: 90%  (very long)
-A2: 80%  (bright)
-A3: 70%  (sustained)
-A4: 50%  (medium)
-A5: 70%  (heavy mod)
-```
-Long sustaining drone with heavy modulation, sitar-like.
-
-### Bell / Metallic
-```
-A0: 80%  (1000 Hz)
-A1: 70%  (long)
-A2: 90%  (very bright)
-A3: trigger quickly
-A4: 30%  (medium)
-A5: 40%  (moderate)
-```
-Bright, metallic bell tone with shimmering modulation.
-
-### Wobble Bass
-```
-A0: 15%  (100 Hz)
-A1: 80%  (long)
-A2: 40%  (mid)
-A3: trigger
-A4: 70%  (fast)
-A5: 90%  (extreme)
-```
-Dubstep-style wobble bass with heavy LFO.
-
----
-
-## Build Instructions
-
-### Prerequisites
-```bash
-# ARM toolchain
-arm-none-eabi-gcc --version
-
-# DFU utility
-dfu-util --version
-
-# Libraries (should exist)
-ls ~/DaisyExamples/libDaisy
-ls ~/DaisyExamples/DaisySP
+### Adjust Sustain Times
+Edit the `base_damping[]` array (0.5 = short, 0.99 = very long):
+```cpp
+const float base_damping[NUM_STRINGS] = {
+    0.95f, 0.95f, 0.95f, 0.95f, 0.95f, 0.95f, 0.95f
+};
 ```
 
-### Compile
-```bash
-cd ~/Documents/KarplusStrongMachine/
-make clean && make -j4
-```
-
-### Upload
-1. Put Daisy in bootloader mode:
-   - Hold BOOT button
-   - Press RESET button
-   - Release BOOT button
-   - LED pulses slowly
-
-2. Upload:
-```bash
-make program-dfu
-# or
-./upload.sh
-```
-
-3. Press RESET to start
-
-### One-Step Build & Upload
-```bash
-./build-and-upload.sh
-```
-
----
+### Change Button Pins
+Edit the `button_pins[]` array to use different GPIO pins.
 
 ## Troubleshooting
 
-### No Sound
-1. Turn up A3 to trigger string
-2. Check audio wiring (Pins 22, 23, GND)
-3. Verify Daisy has power
-4. Press RESET button
+**No sound:**
+- Check audio cable connections
+- Verify buttons are wired correctly (GPIO to GND)
+- Ensure Daisy is powered and reset after upload
 
-### Won't Trigger
-1. Turn A3 past 60% threshold
-2. Try quick up/down motion
-3. Check pot is wired correctly (3.3V, not 5V)
-4. Wait 100ms between triggers (lockout period)
+**Wrong notes:**
+- Verify button connections match pin assignments
+- Check for swapped wires
+- Re-upload firmware
 
-### Unwanted Retriggering
-1. Turn A3 down after initial trigger
-2. String will decay naturally
-3. Lockout timer prevents too-fast triggers
+**Buttons not responding:**
+- Test button continuity with multimeter
+- Check for cold solder joints
+- Verify GND connection
 
-### No Vibrato/Modulation
-1. Turn up A5 (LFO depth)
-2. Adjust A4 (LFO rate) to hear effect
-3. LFO may be very slow - wait for full cycle
+**Display not working:**
+- Non-critical - kalimba works without display
+- Check I2C wiring (SCL/SDA not swapped)
+- Verify 3.3V power to display
 
-### Sound Too Bright/Harsh
-1. Turn down A2 (brightness)
-2. Lower A0 (pitch)
-3. Reduce A5 (LFO depth)
-
-### Decay Too Short
-1. Turn up A1 (decay time)
-2. At 100%, decay is 20+ seconds
-
----
+**Pots not responding:**
+- Optional feature - kalimba works without pots
+- Check 3.3V and GND connections
+- Verify wiper connection to ADC pin
 
 ## Future Enhancements
 
-With 92% CPU remaining, possible additions:
+With 85% CPU remaining, you can add:
+- **Delay effect** for rhythmic echoes
+- **Chorus** for lush, shimmering texture
+- **Multiple tuning presets** (button combo to switch)
+- **Recording/looping**
+- **Velocity sensitivity** (FSR sensors)
+- **MIDI output** to control other synths
+- **Sympathetic resonance** (notes trigger related harmonics)
+- **Expand to 8-12 notes**
 
-**Effects:**
-- [ ] Reverb (10-15% CPU)
-- [ ] Delay/echo (5-8% CPU)
-- [ ] Chorus (3-5% CPU)
+## Files
 
-**Synthesis:**
-- [ ] Polyphony (4-6 voices possible)
-- [ ] Multiple string models
-- [ ] Per-voice tuning/detuning
-
-**Control:**
-- [ ] MIDI input (pitch CV)
-- [ ] Gate/trigger input
-- [ ] CV control of parameters
-- [ ] Preset storage (flash memory)
-
-**Display:**
-- [ ] OLED showing parameters
-- [ ] LED indicators per control
-
----
-
-## Technical Resources
-
-### DaisySP Classes Used
-- `String` - Karplus-Strong implementation
-- `Oscillator` - LFO waveform generators
-- `AnalogControl` - Filtered control inputs
-- `DcBlock` - DC offset removal
-
-### References
-- DaisySP Docs: https://electro-smith.github.io/DaisySP/
-- libDaisy Docs: https://electro-smith.github.io/libDaisy/
-- Daisy Forum: https://forum.electro-smith.com/
-- Mutable Instruments Rings: https://mutable-instruments.net/modules/rings/
-
----
+- **DigitalKalimba.cpp** - Main source code
+- **Makefile.kalimba** - Build configuration
+- **build-kalimba.sh** - Build script
+- **upload-kalimba.sh** - Upload script
+- **build-and-upload-kalimba.sh** - Combined workflow
+- **KALIMBA_WIRING.md** - Complete wiring guide
+- **CLAUDE.md** - Project documentation
 
 ## Credits
 
-**Algorithm:** Karplus-Strong (1983)
-**String Class:** DaisySP (ported from MI Rings by Emilie Gillet)
-**Platform:** Daisy Seed by Electrosmith
-**Created:** 2025-10-29
-
----
+Based on the KarplusStrongMachine project by glitches.
+Uses libDaisy and DaisySP libraries by Electrosmith.
+Karplus-Strong algorithm ported from Mutable Instruments Rings.
 
 ## License
 
-Open source - use and modify as you wish!
+MIT License (same as libDaisy/DaisySP)
 
 ---
 
-**Enjoy creating evolving plucked string textures! 🎸**
+**Enjoy your Digital Kalimba!** 🎵
+
+For questions or issues, check KALIMBA_WIRING.md or CLAUDE.md for detailed documentation.

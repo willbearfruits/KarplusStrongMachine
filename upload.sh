@@ -1,52 +1,51 @@
 #!/bin/bash
+# Upload script for Digital Kalimba
 
-echo "========================================="
-echo "  KARPLUS-STRONG MACHINE - UPLOAD"
-echo "========================================="
+set -e
+
+echo "🎵 ======================================="
+echo "🎵  Uploading Digital Kalimba to Daisy"
+echo "🎵 ======================================="
 echo ""
 
 # Check if binary exists
-if [ ! -f "build/KarplusStrongMachine.bin" ]; then
-    echo "❌ ERROR: Binary not found!"
-    echo "Please build first: ./build.sh"
+if [ ! -f "build/DigitalKalimba.bin" ]; then
+    echo "❌ ERROR: Binary not found. Run ./build-kalimba.sh first"
     exit 1
 fi
 
-echo "✓ Found binary"
+echo "📦 Binary found: build/DigitalKalimba.bin"
 echo ""
-
-# Check if Daisy is in bootloader mode
-echo "Checking for Daisy Seed in bootloader mode..."
-lsusb | grep -q "0483:df11"
-
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "⚠️  WARNING: Daisy Seed not detected!"
-    echo ""
-    echo "Put Daisy in bootloader mode:"
-    echo "  1. Hold BOOT button"
-    echo "  2. Press RESET button"
-    echo "  3. Release BOOT button"
-    echo "  4. LED should pulse slowly"
-    echo ""
-    read -p "Press Enter when ready, or Ctrl+C to cancel..."
-fi
-
-# Upload
+echo "⚠️  BOOTLOADER MODE:"
+echo "   1. Hold BOOT button on Daisy Seed"
+echo "   2. Press RESET button (while holding BOOT)"
+echo "   3. Release BOOT button"
+echo "   4. LED should pulse slowly"
 echo ""
-echo "Uploading..."
-make program-dfu
+read -p "Press ENTER when Daisy is in bootloader mode..."
 
-if [ $? -eq 0 ]; then
-    echo ""
-    echo "========================================="
-    echo "✅ UPLOAD SUCCESSFUL!"
-    echo "========================================="
-    echo ""
-    echo "Press RESET on Daisy to start"
-    echo ""
-else
-    echo ""
-    echo "❌ UPLOAD FAILED"
-    exit 1
-fi
+echo ""
+echo "📤 Uploading via DFU..."
+make -f Makefile.kalimba program-dfu
+
+echo ""
+echo "✅ UPLOAD COMPLETE!"
+echo ""
+echo "🎹 Press RESET button on Daisy to start the kalimba"
+echo ""
+echo "🎵 BUTTON LAYOUT (G Major Pentatonic):"
+echo "   Button 1 (D15): G4 (392 Hz) - Center"
+echo "   Button 2 (D16): A3 (220 Hz) - Left 1"
+echo "   Button 3 (D17): B4 (494 Hz) - Right 1"
+echo "   Button 4 (D18): D4 (294 Hz) - Left 2"
+echo "   Button 5 (D19): E4 (330 Hz) - Right 2"
+echo "   Button 6 (D20): G3 (196 Hz) - Left 3 (lowest)"
+echo "   Button 7 (D21): A4 (440 Hz) - Right 3"
+echo ""
+echo "🎛️  CONTROLS:"
+echo "   A0: Global Brightness"
+echo "   A1: Global Decay/Sustain"
+echo "   A2: Reverb Amount"
+echo "   A3: Reverb Size"
+echo "   A4: LFO Rate"
+echo "   A5: LFO Depth"

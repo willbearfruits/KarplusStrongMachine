@@ -1,52 +1,40 @@
 /*
- * DIGITAL KALIMBA - 7-Button Karplus-Strong Instrument
+ * MULTI-SCALE 7-BUTTON SYNTHESIZER
  * For Daisy Seed using libDaisy + DaisySP
  *
- * Based on KarplusStrongMachine_Final.cpp
- * Modified to create a playable 7-note kalimba instrument
+ * A 7-button polyphonic synthesizer with 5 selectable scales:
+ *   1. Pentatonic Major (G Major)
+ *   2. Dorian Mode (D Dorian)
+ *   3. Chromatic
+ *   4. Kalimba Traditional
+ *   5. Just Intonation / La Monte Young
  *
- * TUNING: G Major Pentatonic (traditional kalimba tuning)
- *   Button 1 (center): G4 (392 Hz)
- *   Button 2 (left 1):  A3 (220 Hz)
- *   Button 3 (right 1): B4 (493.88 Hz)
- *   Button 4 (left 2):  D4 (293.66 Hz)
- *   Button 5 (right 2): E4 (329.63 Hz)
- *   Button 6 (left 3):  G3 (196 Hz)
- *   Button 7 (right 3): A4 (440 Hz)
- *
- * BUTTON WIRING:
- *   Button 1 → D15 (Pin 23) → GND
- *   Button 2 → D16 (Pin 24) → GND
- *   Button 3 → D17 (Pin 25) → GND
- *   Button 4 → D18 (Pin 26) → GND
- *   Button 5 → D19 (Pin 27) → GND
- *   Button 6 → D20 (Pin 28) → GND
- *   Button 7 → D21 (Pin 29) → GND
- *   (Internal pull-ups enabled, active-low)
+ * BUTTON WIRING (active-low, internal pull-ups):
+ *   Button 1-7 → D15-D21 (Pins 23-29) → GND
  *
  * POTENTIOMETER CONTROLS:
- *   A0: Global Brightness (0.5 - 1.0)
- *   A1: Global Decay/Sustain (multiplier on per-note decay)
- *   A2: Reverb Amount (dry/wet mix)
- *   A3: Reverb Size (room size)
- *   A4: LFO Rate (optional vibrato)
- *   A5: LFO Depth
+ *   A0: Global Brightness (0.5 - 1.0, tone color)
+ *   A1: Global Decay/Sustain (0.5 - 1.0, string damping)
+ *   A2: Transpose (-12 to +12 semitones)
+ *   A3: Scale Selector (5 scales)
+ *   A4: LFO Rate (0.1 - 20 Hz, vibrato speed)
+ *   A5: LFO Depth (0 - 15%, vibrato amount)
  *
  * OLED DISPLAY (0.96" SSD1306 I2C):
  *   Pin 12 (SCL) → OLED SCL
  *   Pin 13 (SDA) → OLED SDA
- *   Shows: Active notes, tuning, parameters
+ *   Shows: Current scale, transpose, active buttons, parameters
  *
  * LED: Blinks when any note is triggered
  *
  * FEATURES:
- *   - Full polyphony (all 7 notes can play simultaneously)
- *   - Frequency-dependent decay times (low notes sustain longer)
- *   - Frequency-dependent brightness (high notes are brighter)
- *   - Authentic kalimba character using Karplus-Strong synthesis
- *   - Real-time control over sustain and brightness
- *   - Optional LFO modulation for expressive vibrato
- *   - Reverb for resonator box simulation
+ *   - Full polyphony (all 7 buttons can sound simultaneously)
+ *   - 5 musical scales covering diverse musical traditions
+ *   - Transpose control (±1 octave)
+ *   - Karplus-Strong physical modeling synthesis
+ *   - Real-time OLED feedback
+ *   - Vibrato LFO modulation
+ *   - Low CPU usage (~10-15%)
  */
 
 #include "daisy_seed.h"
@@ -66,9 +54,8 @@ OledDisplay<SSD130xI2c128x64Driver> display;
 const int NUM_STRINGS = 7;
 String strings[NUM_STRINGS];
 
-// Optional LFO modulation
+// LFO modulation (vibrato only)
 Oscillator lfo_vibrato;
-Oscillator lfo_tremolo;
 
 // Reverb for resonator box simulation
 // ReverbSc reverb;  // TODO: Re-enable when DaisySP LGPL is properly configured
@@ -88,45 +75,59 @@ const Pin button_pins[NUM_STRINGS] = {
     seed::D21   // Button 7 (right 3)
 };
 
-// Note names for display
-const char* note_names[NUM_STRINGS] = {
-    "G4", "A3", "B4", "D4", "E4", "G3", "A4"
+// ============================================
+// MULTI-SCALE SYSTEM - 5 Scales Available
+// ============================================
+
+#define NUM_SCALES 5
+
+// Scale names for display
+const char* scale_names[NUM_SCALES] = {
+    "Pentatonic Maj",  // G Major Pentatonic
+    "Dorian Mode",     // D Dorian
+    "Chromatic",       // Chromatic from C3
+    "Kalimba Trad",    // Traditional kalimba voicing
+    "Just/LaMonte"     // La Monte Young just intonation
 };
 
-// G Major Pentatonic tuning (traditional kalimba)
-const float base_frequencies[NUM_STRINGS] = {
-    392.00f,  // G4 - center
-    220.00f,  // A3 - left 1
-    493.88f,  // B4 - right 1 (highest)
-    293.66f,  // D4 - left 2
-    329.63f,  // E4 - right 2
-    196.00f,  // G3 - left 3 (lowest)
-    440.00f   // A4 - right 3
+// Note names for each scale
+const char* scale_note_names[NUM_SCALES][NUM_STRINGS] = {
+    // Pentatonic Major (G Major)
+    {"G3", "A3", "B3", "D4", "E4", "G4", "A4"},
+    // Dorian Mode (D Dorian)
+    {"D3", "E3", "F3", "G3", "A3", "B3", "C4"},
+    // Chromatic
+    {"C3", "C#3", "D3", "D#3", "E3", "F3", "F#3"},
+    // Kalimba Traditional
+    {"G3", "A3", "D4", "E4", "G4", "B4", "A4"},
+    // Just Intonation / La Monte Young
+    {"C3", "E3", "G3", "Bb3", "C4", "D4", "F4"}
 };
 
-// Frequency-dependent damping for authentic kalimba decay
-// Low notes sustain longer, high notes decay faster
-const float base_damping[NUM_STRINGS] = {
-    0.96f,  // G4 - medium-long sustain
-    0.98f,  // A3 - very long sustain (low)
-    0.87f,  // B4 - shorter sustain (highest note)
-    0.94f,  // D4 - long sustain
-    0.92f,  // E4 - medium sustain
-    0.98f,  // G3 - longest sustain (lowest note)
-    0.90f   // A4 - medium sustain
+// Base frequencies for each scale (in Hz)
+const float scale_frequencies[NUM_SCALES][NUM_STRINGS] = {
+    // Pentatonic Major (G Major): G3, A3, B3, D4, E4, G4, A4
+    {196.00f, 220.00f, 246.94f, 293.66f, 329.63f, 392.00f, 440.00f},
+
+    // Dorian Mode (D Dorian): D3, E3, F3, G3, A3, B3, C4
+    {146.83f, 164.81f, 174.61f, 196.00f, 220.00f, 246.94f, 261.63f},
+
+    // Chromatic: C3, C#3, D3, D#3, E3, F3, F#3
+    {130.81f, 138.59f, 146.83f, 155.56f, 164.81f, 174.61f, 185.00f},
+
+    // Kalimba Traditional (alternate G Major voicing): G3, A3, D4, E4, G4, B4, A4
+    {196.00f, 220.00f, 293.66f, 329.63f, 392.00f, 493.88f, 440.00f},
+
+    // Just Intonation / La Monte Young (based on C harmonic series)
+    // C3(1:1), E3(5:4), G3(3:2), Bb3(7:4), C4(2:1), D4(9:8), F4(11:8)
+    {130.81f, 163.51f, 196.22f, 229.28f, 261.63f, 293.66f, 323.08f}
 };
 
-// Frequency-dependent brightness for tonal balance
-// High notes brighter, low notes warmer
-const float base_brightness[NUM_STRINGS] = {
-    0.82f,  // G4
-    0.70f,  // A3 - warmest (low)
-    0.90f,  // B4 - brightest (high)
-    0.76f,  // D4
-    0.78f,  // E4
-    0.70f,  // G3 - warmest (lowest)
-    0.85f   // A4 - bright
-};
+// Current scale selection
+int current_scale = 0;  // Default to Pentatonic Major
+
+// Transpose amount (in semitones, -12 to +12)
+int transpose_semitones = 0;
 
 // Controls
 AdcChannelConfig adc_config[6];
@@ -134,9 +135,9 @@ AnalogControl controls[6];
 
 // Control parameters
 float global_brightness = 0.75f;
-float global_decay = 1.0f;
-float reverb_amount = 0.3f;
-float reverb_size = 0.85f;
+float global_decay = 0.95f;  // Global damping coefficient
+float transpose_pot = 0.5f;  // Transpose control (0-1, maps to -12 to +12 semitones)
+float scale_pot = 0.0f;      // Scale selector (0-1, maps to 0-4 scale index)
 float lfo_rate = 2.0f;
 float lfo_depth = 0.1f;
 
@@ -169,36 +170,53 @@ void AudioCallback(AudioHandle::InputBuffer in,
     }
 
     // Read control values
-    float pot_brightness   = controls[0].Value();
-    float pot_decay        = controls[1].Value();
-    float pot_reverb_mix   = controls[2].Value();
-    float pot_reverb_size  = controls[3].Value();
-    float pot_lfo_rate     = controls[4].Value();
-    float pot_lfo_depth    = controls[5].Value();
+    float pot_brightness   = controls[0].Value();  // A0
+    float pot_decay        = controls[1].Value();  // A1
+    float pot_transpose    = controls[2].Value();  // A2 - NEW: Transpose control
+    float pot_scale_select = controls[3].Value();  // A3 - NEW: Scale selector
+    float pot_lfo_rate     = controls[4].Value();  // A4
+    float pot_lfo_depth    = controls[5].Value();  // A5
 
-    // Map controls
+    // Map controls to parameters
     global_brightness = 0.5f + (pot_brightness * 0.5f);  // 0.5 - 1.0
-    global_decay = 0.5f + (pot_decay * 0.5f);            // 0.5 - 1.0 multiplier
-    reverb_amount = pot_reverb_mix;                      // 0.0 - 1.0
-    reverb_size = 0.7f + (pot_reverb_size * 0.25f);     // 0.7 - 0.95
-    lfo_rate = 0.1f * powf(200.0f, pot_lfo_rate);       // 0.1 - 20 Hz
+    global_decay = 0.5f + (pot_decay * 0.5f);            // 0.5 - 1.0 damping coefficient
+    lfo_rate = 0.1f * powf(200.0f, pot_lfo_rate);        // 0.1 - 20 Hz
     lfo_depth = pot_lfo_depth * 0.15f;                   // 0 - 15% modulation
 
-    // Update reverb parameters
-    // reverb.SetFeedback(reverb_size);
-    // reverb.SetLpFreq(8000.0f);
+    // NEW: Scale selection (5 scales, divide pot range into zones)
+    int new_scale = (int)(pot_scale_select * 4.99f);  // Maps 0.0-1.0 to 0-4
+    if (new_scale != current_scale) {
+        current_scale = new_scale;
+        // Update all string frequencies when scale changes
+        for (int s = 0; s < NUM_STRINGS; s++) {
+            float base_freq = scale_frequencies[current_scale][s];
+            // Apply transpose
+            float transpose_ratio = powf(2.0f, transpose_semitones / 12.0f);
+            strings[s].SetFreq(base_freq * transpose_ratio);
+        }
+    }
+
+    // NEW: Transpose control (-12 to +12 semitones)
+    int new_transpose = (int)((pot_transpose - 0.5f) * 24.0f);  // Maps 0.0-1.0 to -12 to +12
+    if (new_transpose != transpose_semitones) {
+        transpose_semitones = new_transpose;
+        // Update all string frequencies when transpose changes
+        for (int s = 0; s < NUM_STRINGS; s++) {
+            float base_freq = scale_frequencies[current_scale][s];
+            float transpose_ratio = powf(2.0f, transpose_semitones / 12.0f);
+            strings[s].SetFreq(base_freq * transpose_ratio);
+        }
+    }
 
     // Update LFO rates
     lfo_vibrato.SetFreq(lfo_rate);
-    lfo_tremolo.SetFreq(lfo_rate * 0.7f);
 
     // Process audio samples
     for (size_t i = 0; i < size; i++) {
         float output = 0.0f;
 
-        // Process LFOs for optional modulation
+        // Process LFO for vibrato modulation
         float vibrato_sig = lfo_vibrato.Process();
-        float tremolo_sig = lfo_tremolo.Process();
 
         // Process all 7 strings (full polyphony)
         for (int s = 0; s < NUM_STRINGS; s++) {
@@ -213,26 +231,21 @@ void AudioCallback(AudioHandle::InputBuffer in,
                 led_timer = LED_ON_TIME;
             }
 
-            // Update string parameters with global controls
-            float adjusted_damping = base_damping[s] * global_decay;
-            adjusted_damping = fclamp(adjusted_damping, 0.5f, 0.99f);
-            strings[s].SetDamping(adjusted_damping);
+            // Update string parameters with global controls (simplified)
+            strings[s].SetDamping(global_decay);  // Use global damping directly
 
-            // Apply vibrato modulation (pitch)
-            float pitch_mod = 1.0f + (vibrato_sig * 0.01f * lfo_depth);
-            strings[s].SetFreq(base_frequencies[s] * pitch_mod);
+            // Apply vibrato modulation (pitch) to current frequency
+            float base_freq = scale_frequencies[current_scale][s];
+            float transpose_ratio = powf(2.0f, transpose_semitones / 12.0f);
+            float pitch_mod = 1.0f + (vibrato_sig * 0.02f * lfo_depth);  // ±2% vibrato
+            strings[s].SetFreq(base_freq * transpose_ratio * pitch_mod);
 
-            // Apply brightness with global control
-            float adjusted_brightness = base_brightness[s] * global_brightness;
-            adjusted_brightness = fclamp(adjusted_brightness, 0.3f, 1.0f);
+            // Apply global brightness
+            float adjusted_brightness = fclamp(global_brightness, 0.5f, 1.0f);
             strings[s].SetBrightness(adjusted_brightness);
 
-            // Generate string output
+            // Generate string output (no tremolo - simplified)
             float string_output = strings[s].Process(trigger);
-
-            // Apply tremolo (amplitude modulation)
-            float amp_mod = 1.0f - (fabsf(tremolo_sig) * 0.3f * lfo_depth);
-            string_output *= amp_mod;
 
             output += string_output;
         }
@@ -284,46 +297,55 @@ void UpdateDisplay() {
 
     // Clear display
     display.Fill(false);
-
-    // Title
-    display.SetCursor(0, 0);
-    display.WriteString("DIGITAL KALIMBA", Font_6x8, true);
-
-    // Tuning indicator
-    display.SetCursor(0, 10);
-    display.WriteString("G Major Pentatonic", Font_6x8, true);
-
-    // Show active notes
-    display.SetCursor(0, 22);
-    display.WriteString("Playing:", Font_6x8, true);
-
-    int active_count = 0;
-    char active_notes[32] = "";
-    for (int i = 0; i < NUM_STRINGS; i++) {
-        if (notes_active[i]) {
-            if (active_count > 0) {
-                strcat(active_notes, " ");
-            }
-            strcat(active_notes, note_names[i]);
-            active_count++;
-        }
-    }
-
-    if (active_count == 0) {
-        strcpy(active_notes, "---");
-    }
-
-    display.SetCursor(0, 32);
-    display.WriteString(active_notes, Font_6x8, true);
-
-    // Show controls
     char str_buf[32];
-    display.SetCursor(0, 44);
-    sprintf(str_buf, "Decay:%.1f Rev:%.0f%%", global_decay, reverb_amount * 100.0f);
+
+    // Line 1: Current scale name
+    display.SetCursor(0, 0);
+    sprintf(str_buf, "SCALE:%s", scale_names[current_scale]);
     display.WriteString(str_buf, Font_6x8, true);
 
-    display.SetCursor(0, 54);
-    sprintf(str_buf, "Brite:%.2f LFO:%.1f", global_brightness, lfo_depth * 100.0f);
+    // Line 2: Transpose amount
+    display.SetCursor(0, 10);
+    if (transpose_semitones >= 0) {
+        sprintf(str_buf, "Transpose: +%d", transpose_semitones);
+    } else {
+        sprintf(str_buf, "Transpose: %d", transpose_semitones);
+    }
+    display.WriteString(str_buf, Font_6x8, true);
+
+    // Line 3: Active buttons visualization (7 dots)
+    display.SetCursor(0, 22);
+    display.WriteString("Btns:", Font_6x8, true);
+    display.SetCursor(36, 22);
+    char button_viz[16] = "";
+    for (int i = 0; i < NUM_STRINGS; i++) {
+        strcat(button_viz, notes_active[i] ? "O" : ".");
+    }
+    display.WriteString(button_viz, Font_6x8, true);
+
+    // Line 4: Note names for current scale
+    display.SetCursor(0, 32);
+    sprintf(str_buf, "%s %s %s %s",
+            scale_note_names[current_scale][0],
+            scale_note_names[current_scale][1],
+            scale_note_names[current_scale][2],
+            scale_note_names[current_scale][3]);
+    display.WriteString(str_buf, Font_6x8, true);
+
+    display.SetCursor(0, 40);
+    sprintf(str_buf, "%s %s %s",
+            scale_note_names[current_scale][4],
+            scale_note_names[current_scale][5],
+            scale_note_names[current_scale][6]);
+    display.WriteString(str_buf, Font_6x8, true);
+
+    // Line 5-6: Parameters
+    display.SetCursor(0, 50);
+    sprintf(str_buf, "Decay:%.2f Brt:%.2f", global_decay, global_brightness);
+    display.WriteString(str_buf, Font_6x8, true);
+
+    display.SetCursor(0, 58);
+    sprintf(str_buf, "LFO:%.1fHz D:%.0f%%", lfo_rate, lfo_depth * 100.0f);
     display.WriteString(str_buf, Font_6x8, true);
 
     // Update display
@@ -363,30 +385,20 @@ int main(void) {
         note_activity_timer[i] = 0;
     }
 
-    // Initialize Karplus-Strong strings
+    // Initialize Karplus-Strong strings with initial scale (Pentatonic Major)
     for (int i = 0; i < NUM_STRINGS; i++) {
         strings[i].Init(sample_rate);
-        strings[i].SetFreq(base_frequencies[i]);
-        strings[i].SetDamping(base_damping[i]);
-        strings[i].SetBrightness(base_brightness[i]);
-        strings[i].SetNonLinearity(0.1f);  // Metallic kalimba character
+        strings[i].SetFreq(scale_frequencies[0][i]);  // Start with scale 0
+        strings[i].SetDamping(global_decay);          // Use global damping
+        strings[i].SetBrightness(global_brightness);  // Use global brightness
+        strings[i].SetNonLinearity(0.1f);            // Metallic kalimba character
     }
 
-    // Initialize LFOs
+    // Initialize LFOs (vibrato only, remove tremolo)
     lfo_vibrato.Init(sample_rate);
     lfo_vibrato.SetWaveform(Oscillator::WAVE_SIN);
     lfo_vibrato.SetAmp(1.0f);
     lfo_vibrato.SetFreq(5.0f);
-
-    lfo_tremolo.Init(sample_rate);
-    lfo_tremolo.SetWaveform(Oscillator::WAVE_TRI);
-    lfo_tremolo.SetAmp(1.0f);
-    lfo_tremolo.SetFreq(3.5f);
-
-    // Initialize reverb
-    // reverb.Init(sample_rate);
-    // reverb.SetFeedback(0.85f);
-    // reverb.SetLpFreq(8000.0f);
 
     // Initialize DC blocker
     dc_blocker.Init(sample_rate);

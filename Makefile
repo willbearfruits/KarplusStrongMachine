@@ -1,8 +1,8 @@
-# Final Version - A3 Controls Trigger Speed
-TARGET = KarplusStrongMachine
+# Digital Kalimba - 7-Button Karplus-Strong Instrument
+TARGET = DigitalKalimba
 
 # Sources
-CPP_SOURCES = KarplusStrongMachine_Final.cpp
+CPP_SOURCES = DigitalKalimba.cpp
 
 # Library Locations
 LIBDAISY_DIR = $(HOME)/DaisyExamples/libDaisy

@@ -7,13 +7,9 @@ import { DFUDevice } from './dfu.js';
 // State
 let dfuDevice = null;
 let firmwareData = null;
-let selectedFirmware = 'karplus';
 
-// Firmware URLs (will point to GitHub releases)
-const FIRMWARE_URLS = {
-    karplus: 'firmware/KarplusStrongMachine.bin',
-    kalimba: 'firmware/DigitalKalimba.bin'
-};
+// Firmware URL
+const FIRMWARE_URL = 'firmware/DigitalKalimba.bin';
 
 // DOM elements
 const elements = {
@@ -47,16 +43,7 @@ function init() {
     elements.flashBtn.addEventListener('click', handleFlash);
     elements.customFirmware.addEventListener('change', handleCustomFirmware);
 
-    // Firmware selection
-    document.querySelectorAll('input[name="firmware"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            selectedFirmware = e.target.value;
-            firmwareData = null;
-            updateFirmwareStatus();
-            log(`Selected firmware: ${selectedFirmware === 'karplus' ? 'Karplus-Strong Machine' : 'Digital Kalimba'}`, 'info');
-        });
-    });
-
+    log('Multi-Scale Synthesizer - Ready to flash!', 'info');
     log('Ready to connect to Daisy Seed', 'info');
 }
 
@@ -131,8 +118,7 @@ async function handleFlash() {
  */
 async function loadFirmware() {
     try {
-        const url = FIRMWARE_URLS[selectedFirmware];
-        const response = await fetch(url);
+        const response = await fetch(FIRMWARE_URL);
 
         if (!response.ok) {
             throw new Error(`HTTP error ${response.status}`);

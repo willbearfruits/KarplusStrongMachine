@@ -3,10 +3,12 @@ build/
 *.o
 *.d
 *.elf
-*.bin
 *.hex
 *.map
 *.lst
+
+# Exception: Allow firmware binaries in web-flasher
+!web-flasher/firmware/*.bin
 
 # Editor/IDE files
 .vscode/

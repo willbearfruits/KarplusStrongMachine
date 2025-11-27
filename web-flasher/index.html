@@ -9,9 +9,9 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎸 Karplus-Strong Machine</h1>
+            <h1>🎹 Multi-Scale Synthesizer</h1>
             <h2>Daisy Seed Web Flasher</h2>
-            <p class="subtitle">Flash firmware directly from your browser - no installation needed!</p>
+            <p class="subtitle">7-button polyphonic synth with 5 musical scales - flash from your browser!</p>
         </header>
 
         <main>
@@ -46,28 +46,21 @@
                 </ol>
             </section>
 
-            <!-- Firmware Selection -->
+            <!-- Firmware Info -->
             <section class="card">
-                <h3>🎛️ Select Firmware</h3>
-                <div class="firmware-options">
-                    <label class="firmware-option">
-                        <input type="radio" name="firmware" value="karplus" checked>
-                        <div class="option-content">
-                            <h4>Karplus-Strong Machine</h4>
-                            <p>Auto-trigger mode with triple LFO modulation</p>
-                            <small>6 potentiometer controls + OLED display</small>
-                        </div>
-                    </label>
-                    <label class="firmware-option">
-                        <input type="radio" name="firmware" value="kalimba">
-                        <div class="option-content">
-                            <h4>Digital Kalimba</h4>
-                            <p>7-button polyphonic instrument</p>
-                            <small>G Major Pentatonic tuning + reverb</small>
-                        </div>
-                    </label>
+                <h3>🎛️ Firmware: Multi-Scale Synthesizer</h3>
+                <div class="firmware-info">
+                    <h4>Features</h4>
+                    <ul>
+                        <li><strong>5 Musical Scales:</strong> Pentatonic, Dorian, Chromatic, Kalimba, Just Intonation</li>
+                        <li><strong>7 Buttons:</strong> Full polyphony, all notes play simultaneously</li>
+                        <li><strong>Transpose:</strong> ±12 semitones (full octave range)</li>
+                        <li><strong>OLED Display:</strong> Shows current scale, transpose, active notes</li>
+                        <li><strong>Controls:</strong> Brightness, decay, LFO rate & depth</li>
+                        <li><strong>Low CPU:</strong> ~10-15% usage, efficient Karplus-Strong synthesis</li>
+                    </ul>
                 </div>
-                <p class="note"><strong>Note:</strong> Pre-compiled firmware binaries will be available in GitHub Releases</p>
+                <p class="note"><strong>Binary size:</strong> 104KB | <strong>Platform:</strong> STM32H750 (Daisy Seed)</p>
             </section>
 
             <!-- Connection and Flashing -->

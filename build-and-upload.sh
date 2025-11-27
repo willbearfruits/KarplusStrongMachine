@@ -1,19 +1,19 @@
 #!/bin/bash
+# Combined build and upload for Digital Kalimba
 
-echo "========================================="
-echo "  KARPLUS-STRONG - BUILD & UPLOAD"
-echo "========================================="
+set -e
+
+echo "🎵 ================================================"
+echo "🎵  Digital Kalimba - Build & Upload to Daisy"
+echo "🎵 ================================================"
 echo ""
 
-# Build first
-./build.sh
+# Build
+./build-kalimba.sh
 
-if [ $? -eq 0 ]; then
-    echo ""
-    read -p "Put Daisy in bootloader mode and press Enter..."
-    echo ""
-    ./upload.sh
-else
-    echo "Build failed. Cannot upload."
-    exit 1
-fi
+echo ""
+echo "==============================================="
+echo ""
+
+# Upload
+./upload-kalimba.sh
