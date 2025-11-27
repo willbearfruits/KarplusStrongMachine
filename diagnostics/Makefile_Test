@@ -1,0 +1,13 @@
+# Test Version - Auto Trigger
+TARGET = KarplusStrongMachine_Test
+
+# Sources
+CPP_SOURCES = KarplusStrongMachine_AutoTrigger.cpp
+
+# Library Locations
+LIBDAISY_DIR = ../../DaisyExamples/libDaisy
+DAISYSP_DIR = ../../DaisyExamples/DaisySP
+
+# Core location
+SYSTEM_FILES_DIR = $(LIBDAISY_DIR)/core
+include $(SYSTEM_FILES_DIR)/Makefile

@@ -1,0 +1,13 @@
+# Dual Mode Version - Button Toggle
+TARGET = KarplusStrongMachine_DualMode
+
+# Sources
+CPP_SOURCES = KarplusStrongMachine_DualMode.cpp
+
+# Library Locations
+LIBDAISY_DIR = ../../DaisyExamples/libDaisy
+DAISYSP_DIR = ../../DaisyExamples/DaisySP
+
+# Core location
+SYSTEM_FILES_DIR = $(LIBDAISY_DIR)/core
+include $(SYSTEM_FILES_DIR)/Makefile

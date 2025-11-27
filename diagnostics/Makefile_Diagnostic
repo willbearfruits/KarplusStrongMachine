@@ -1,0 +1,13 @@
+# Diagnostic Test
+TARGET = DiagnosticTest
+
+# Sources
+CPP_SOURCES = DiagnosticTest.cpp
+
+# Library Locations
+LIBDAISY_DIR = ../../DaisyExamples/libDaisy
+DAISYSP_DIR = ../../DaisyExamples/DaisySP
+
+# Core location
+SYSTEM_FILES_DIR = $(LIBDAISY_DIR)/core
+include $(SYSTEM_FILES_DIR)/Makefile

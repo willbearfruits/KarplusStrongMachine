@@ -1,0 +1,13 @@
+# Monitored Version
+TARGET = KarplusStrongMachine
+
+# Sources
+CPP_SOURCES = KarplusStrongMachine_Monitored.cpp
+
+# Library Locations
+LIBDAISY_DIR = ../../DaisyExamples/libDaisy
+DAISYSP_DIR = ../../DaisyExamples/DaisySP
+
+# Core location
+SYSTEM_FILES_DIR = $(LIBDAISY_DIR)/core
+include $(SYSTEM_FILES_DIR)/Makefile

@@ -1,0 +1,174 @@
+===============================================================================
+INITIALIZATION TIMING DIAGRAM - Karplus-Strong Machine with OLED
+===============================================================================
+
+Time →
+════════════════════════════════════════════════════════════════════════════
+
+PHASE 1: HARDWARE INITIALIZATION
+────────────────────────────────────────────────────────────────────────────
+│
+│  hw.Init()                    ◄─── Initializes AK4556 codec
+│    └─ ConfigureAudio()            ├─ GPIO setup
+│         └─ Codec reset:           ├─ SAI configuration  
+│              HIGH → LOW → HIGH    └─ AK4556 reset sequence
+│              (1ms delays)
+│
+├─ [100ms delay] ◄────────────────────── CRITICAL: Codec stabilization
+│                                        Required for AK4556 to be ready
+│                                        Tested: Shorter delays = no audio
+│
+└────────────────────────────────────────────────────────────────────────────
+
+PHASE 2: PERIPHERAL CONFIGURATION (Safe zone)
+────────────────────────────────────────────────────────────────────────────
+│
+│  ADC Configuration                ◄─── No I2C, safe to configure
+│    └─ 6 channels (A0-A5)
+│
+│  AnalogControl Init              ◄─── Control smoothing setup
+│    └─ Filtering parameters
+│
+│  DSP Module Init                 ◄─── DaisySP modules
+│    ├─ String (Karplus-Strong)
+│    ├─ LFO Vibrato (sine)
+│    ├─ LFO Tremolo (triangle)
+│    ├─ LFO Filter (sawtooth)
+│    └─ DC Blocker
+│
+└────────────────────────────────────────────────────────────────────────────
+
+PHASE 3: AUDIO START (Critical transition)
+────────────────────────────────────────────────────────────────────────────
+│
+│  hw.StartAudio(AudioCallback)    ◄─── Starts SAI DMA transfers
+│    └─ Enables audio interrupts       ├─ Audio callback now running
+│                                       └─ Real-time processing active
+│
+├─ [50ms delay] ◄─────────────────────── CRITICAL: DMA stabilization
+│                                        First few buffers need to settle
+│                                        Prevents initial audio glitches
+│
+└────────────────────────────────────────────────────────────────────────────
+
+PHASE 4: DISPLAY INITIALIZATION (Safe - audio is running)
+────────────────────────────────────────────────────────────────────────────
+│
+│  Main Loop Starts
+│    │
+│    └─ First Iteration:
+│         │
+│         ├─ OLED Init               ◄─── NOW safe to init I2C
+│         │   ├─ I2C_1 config            ├─ Audio is independent
+│         │   ├─ Address 0x3C            ├─ No codec interference
+│         │   ├─ Speed: 400kHz           └─ Fails gracefully if no display
+│         │   └─ SSD1306 init
+│         │
+│         ├─ Splash Screen
+│         │   └─ "KARPLUS-STRONG MACHINE"
+│         │
+│         └─ [1 second delay]
+│
+└────────────────────────────────────────────────────────────────────────────
+
+PHASE 5: NORMAL OPERATION
+────────────────────────────────────────────────────────────────────────────
+│
+│  Main Loop (1ms cycle):
+│    │
+│    ├─ LED Update (led_timer > 0)
+│    │
+│    └─ Display Update (time-sliced):
+│         │
+│         ├─ Check timer (10Hz max)
+│         ├─ Change detection
+│         │   └─ Only update if values changed
+│         └─ I2C transaction (if needed)
+│              ├─ Format parameters
+│              ├─ Write to display buffer
+│              └─ Send via I2C
+│
+│  Audio Callback (48kHz, parallel):
+│    │
+│    ├─ Process controls (read ADC)
+│    ├─ Update DSP parameters
+│    ├─ Auto-trigger logic
+│    ├─ LFO processing
+│    ├─ Karplus-Strong synthesis
+│    ├─ Modulation (vibrato/tremolo/filter)
+│    └─ Output (mono to stereo)
+│
+└────────────────────────────────────────────────────────────────────────────
+
+===============================================================================
+TIMING CONSTRAINTS SUMMARY
+===============================================================================
+
+MUST HAVE:
+  ✓ 100ms delay after hw.Init()         (Codec stabilization)
+  ✓ 50ms delay after StartAudio()       (DMA stabilization)
+  ✓ OLED init AFTER StartAudio()        (No I2C before audio)
+
+MUST NOT:
+  ✗ Initialize I2C before StartAudio()  (Breaks codec timing)
+  ✗ I2C in audio callback                (Blocks real-time path)
+  ✗ Long operations in main loop         (Use time-slicing)
+
+OPTIMIZATIONS:
+  ✓ Change detection (reduce I2C traffic)
+  ✓ 10Hz update rate (human-readable, efficient)
+  ✓ Thresholds (0.5Hz freq, 0.01 normalized)
+
+===============================================================================
+WHAT HAPPENS IF YOU VIOLATE THE TIMING?
+===============================================================================
+
+Scenario A: OLED init BEFORE StartAudio() (WRONG - old code)
+  Problem: I2C transactions during codec stabilization period
+  Result: Audio codec doesn't initialize properly
+  Symptom: No audio output, silent operation
+  Fix: Move OLED init to AFTER StartAudio() + 50ms delay
+
+Scenario B: No delay after hw.Init()
+  Problem: Codec not ready when StartAudio() called
+  Result: Audio buffer underruns, glitches, or silence
+  Symptom: Crackling, pops, or no sound
+  Fix: Add 100ms delay (tested minimum ~10ms, use 100ms for safety)
+
+Scenario C: No delay after StartAudio()
+  Problem: DMA buffers not fully initialized
+  Result: Initial audio artifacts
+  Symptom: Click/pop at startup, then works fine
+  Fix: Add 50ms delay before other operations
+
+Scenario D: I2C in audio callback
+  Problem: Blocking operation in real-time path
+  Result: Audio buffer underruns, missed samples
+  Symptom: Regular glitches, stuttering, dropouts
+  Fix: Move I2C to main loop with time-slicing
+
+===============================================================================
+PARALLEL OPERATION (After initialization)
+===============================================================================
+
+Audio Callback (High Priority)        Main Loop (Low Priority)
+─────────────────────────────          ────────────────────────
+Running at 48kHz                       Running at ~1kHz
+Block size: 4 samples                  1ms cycle time
+Time budget: ~83μs                     Non-critical tasks
+
+├─ Read ADC controls                   ├─ Update LED
+├─ Map parameters                      └─ Update display (10Hz)
+├─ Process LFOs                             └─ Only if values changed
+├─ Karplus-Strong synthesis
+├─ Modulation
+└─ Output samples
+
+No I2C! ◄──────────────────────────────────► I2C allowed here
+
+===============================================================================
+
+This timing sequence has been tested and verified to work reliably.
+The key insight: Audio initialization must complete before I2C init.
+
+===============================================================================

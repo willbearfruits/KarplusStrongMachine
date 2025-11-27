@@ -1,0 +1,209 @@
+═══════════════════════════════════════════════════════════════════
+ KARPLUS-STRONG MACHINE - QUICK START
+═══════════════════════════════════════════════════════════════════
+
+PROJECT LOCATION: ~/Documents/KarplusStrongMachine/
+
+═══════════════════════════════════════════════════════════════════
+ BUILD & UPLOAD
+═══════════════════════════════════════════════════════════════════
+
+cd ~/Documents/KarplusStrongMachine/
+./build-and-upload.sh
+
+(Put Daisy in bootloader mode when prompted)
+
+═══════════════════════════════════════════════════════════════════
+ HARDWARE WIRING
+═══════════════════════════════════════════════════════════════════
+
+AUDIO OUTPUT:
+  Pin 22 → Left channel  (mono, same signal both channels)
+  Pin 23 → Right channel
+  GND → Audio ground
+
+CONTROLS (POTENTIOMETERS):
+  A0 (Pin 15) → Pitch (50 Hz - 2000 Hz)
+  A1 (Pin 16) → Decay Time (1s to 20s+)
+  A2 (Pin 17) → Brightness (filter cutoff)
+  A3 (Pin 18) → Excitation (trigger when turned up)
+  A4 (Pin 19) → LFO Rate (0.1 Hz - 20 Hz)
+  A5 (Pin 20) → LFO Depth (modulation amount)
+
+POTENTIOMETER WIRING:
+  Pin 1 (CCW) → GND
+  Pin 2 (Wiper) → A0-A5
+  Pin 3 (CW) → 3.3V (NOT 5V!)
+
+═══════════════════════════════════════════════════════════════════
+ HOW TO PLAY
+═══════════════════════════════════════════════════════════════════
+
+1. Set A0 (pitch) to desired note
+2. Set A1 (decay) high for long sustain
+3. Set A2 (brightness) to mid position
+4. Quickly turn A3 (excitation) up past 60% to trigger pluck
+5. Adjust A4 (LFO rate) for vibrato speed
+6. Adjust A5 (LFO depth) for modulation intensity
+
+TIP: Turn A3 down after triggering for clean decay,
+     or keep it up for continuous retriggering
+
+═══════════════════════════════════════════════════════════════════
+ CONTROLS EXPLAINED
+═══════════════════════════════════════════════════════════════════
+
+A0 - PITCH
+  Low: 50 Hz (sub-bass rumble)
+  Mid: 220 Hz (A3 - guitar range)
+  High: 2000 Hz (bright pluck)
+
+A1 - DECAY TIME
+  Low: ~1 second (short pluck)
+  Mid: ~5 seconds (sustained string)
+  High: 20+ seconds (infinite sustain)
+
+A2 - BRIGHTNESS
+  Low: Dull, muffled (dark bass)
+  Mid: Balanced (acoustic guitar)
+  High: Bright, metallic (sitar-like)
+
+A3 - EXCITATION
+  < 60%: No trigger
+  > 60%: Pluck string (rising edge triggers)
+  Tip: Quick up/down motion for clean plucks
+
+A4 - LFO RATE
+  Low: 0.1 Hz (slow sweep, 10 sec cycle)
+  Mid: 5 Hz (vibrato)
+  High: 20 Hz (fast warble)
+
+A5 - LFO DEPTH
+  0%: No modulation
+  50%: Subtle movement
+  100%: Extreme modulation
+
+═══════════════════════════════════════════════════════════════════
+ LFO MODULATION EXPLAINED
+═══════════════════════════════════════════════════════════════════
+
+The LFOs modulate 3 parameters simultaneously:
+
+VIBRATO (pitch)
+  - Sine wave
+  - ±2% pitch variation
+  - Musical vibrato effect
+
+TREMOLO (amplitude)
+  - Triangle wave
+  - Slightly slower than vibrato
+  - Pulsing volume effect
+
+FILTER SWEEP (brightness)
+  - Sawtooth wave
+  - Even slower
+  - Gradual brightness changes
+
+All 3 LFOs use A4 for rate and A5 for depth!
+
+═══════════════════════════════════════════════════════════════════
+ PRESET SOUNDS
+═══════════════════════════════════════════════════════════════════
+
+ACOUSTIC GUITAR
+  A0: 40% (165 Hz - E3)
+  A1: 50% (medium decay)
+  A2: 60% (bright)
+  A3: trigger
+  A4: 20% (slow)
+  A5: 30% (subtle)
+
+BASS PLUCK
+  A0: 10% (82 Hz - low E)
+  A1: 30% (short)
+  A2: 30% (dark)
+  A3: trigger
+  A4: 10% (very slow)
+  A5: 10% (minimal)
+
+SITAR / DRONE
+  A0: 30% (130 Hz - C3)
+  A1: 90% (very long)
+  A2: 80% (bright)
+  A3: 70% (sustained trigger)
+  A4: 50% (medium)
+  A5: 70% (heavy mod)
+
+BELL / METALLIC
+  A0: 80% (1000 Hz)
+  A1: 70% (long)
+  A2: 90% (very bright)
+  A3: trigger quickly
+  A4: 30% (medium)
+  A5: 40% (moderate)
+
+WOBBLE BASS
+  A0: 15% (100 Hz)
+  A1: 80% (long)
+  A2: 40% (mid)
+  A3: trigger
+  A4: 70% (fast)
+  A5: 90% (extreme)
+
+═══════════════════════════════════════════════════════════════════
+ BUILD STATUS
+═══════════════════════════════════════════════════════════════════
+
+✅ COMPILED AND TESTED
+
+Binary size: 90 KB (69.6% of flash)
+Memory usage:
+  - Flash: 91,220 bytes / 128 KB
+  - SRAM: 18,764 bytes / 512 KB
+  - RAM_D2: 16,704 bytes / 288 KB
+
+CPU usage: ~5-8% (92% free for expansion!)
+
+═══════════════════════════════════════════════════════════════════
+ TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════
+
+NO SOUND:
+  • Turn up A3 to trigger
+  • Check audio output wiring
+  • Press RESET on Daisy
+
+STRING WON'T TRIGGER:
+  • Turn A3 past 60%
+  • Try quick up/down motion
+  • Wait 100ms between triggers
+
+TOO MUCH RETRIGGERING:
+  • Turn A3 down after trigger
+  • There's a 100ms lockout between triggers
+
+SOUND TOO QUIET:
+  • Increase A1 (decay)
+  • Check audio amplifier volume
+  • Daisy outputs line level (may need amp)
+
+SOUND TOO BRIGHT/HARSH:
+  • Turn down A2 (brightness)
+  • Lower A0 (pitch)
+
+NO VIBRATO/MODULATION:
+  • Turn up A5 (LFO depth)
+  • Adjust A4 (LFO rate)
+  • Wait for LFO cycle to complete
+
+═══════════════════════════════════════════════════════════════════
+ DOCUMENTATION
+═══════════════════════════════════════════════════════════════════
+
+README.md - Full documentation and technical details
+
+═══════════════════════════════════════════════════════════════════
+
+Happy plucking! 🎸🎵
+
+═══════════════════════════════════════════════════════════════════

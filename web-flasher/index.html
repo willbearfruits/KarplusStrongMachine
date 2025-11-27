@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daisy Seed Web Flasher - Karplus-Strong Machine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎸 Karplus-Strong Machine</h1>
+            <h2>Daisy Seed Web Flasher</h2>
+            <p class="subtitle">Flash firmware directly from your browser - no installation needed!</p>
+        </header>
+
+        <main>
+            <!-- Browser Compatibility Check -->
+            <div id="compatibility-warning" class="warning hidden">
+                <strong>⚠️ Browser Not Supported</strong>
+                <p>This tool requires a browser with WebUSB support. Please use:</p>
+                <ul>
+                    <li>Chrome/Chromium 61+</li>
+                    <li>Edge 79+</li>
+                    <li>Opera 48+</li>
+                </ul>
+                <p>Firefox and Safari do not currently support WebUSB.</p>
+            </div>
+
+            <!-- Instructions Section -->
+            <section class="card">
+                <h3>📋 Instructions</h3>
+                <ol>
+                    <li><strong>Put Daisy Seed in DFU Bootloader Mode:</strong>
+                        <ul>
+                            <li>Hold the <strong>BOOT</strong> button</li>
+                            <li>Press and release <strong>RESET</strong> button</li>
+                            <li>Release <strong>BOOT</strong> button</li>
+                            <li>LED should pulse slowly (bootloader mode active)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Select firmware</strong> to flash (Karplus-Strong Machine or Digital Kalimba)</li>
+                    <li><strong>Click "Connect to Daisy Seed"</strong> and select the device from the popup</li>
+                    <li><strong>Click "Flash Firmware"</strong> and wait for completion</li>
+                    <li><strong>Press RESET</strong> on your Daisy to start the new firmware!</li>
+                </ol>
+            </section>
+
+            <!-- Firmware Selection -->
+            <section class="card">
+                <h3>🎛️ Select Firmware</h3>
+                <div class="firmware-options">
+                    <label class="firmware-option">
+                        <input type="radio" name="firmware" value="karplus" checked>
+                        <div class="option-content">
+                            <h4>Karplus-Strong Machine</h4>
+                            <p>Auto-trigger mode with triple LFO modulation</p>
+                            <small>6 potentiometer controls + OLED display</small>
+                        </div>
+                    </label>
+                    <label class="firmware-option">
+                        <input type="radio" name="firmware" value="kalimba">
+                        <div class="option-content">
+                            <h4>Digital Kalimba</h4>
+                            <p>7-button polyphonic instrument</p>
+                            <small>G Major Pentatonic tuning + reverb</small>
+                        </div>
+                    </label>
+                </div>
+                <p class="note"><strong>Note:</strong> Pre-compiled firmware binaries will be available in GitHub Releases</p>
+            </section>
+
+            <!-- Connection and Flashing -->
+            <section class="card">
+                <h3>🔌 Flash Firmware</h3>
+
+                <div class="status-display">
+                    <div class="status-item">
+                        <span class="label">Device Status:</span>
+                        <span id="device-status" class="value">Not Connected</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Firmware:</span>
+                        <span id="firmware-status" class="value">Not Loaded</span>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="connect-btn" class="btn btn-primary">
+                        <span class="btn-icon">🔌</span>
+                        Connect to Daisy Seed
+                    </button>
+                    <button id="flash-btn" class="btn btn-secondary" disabled>
+                        <span class="btn-icon">⚡</span>
+                        Flash Firmware
+                    </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="progress-container" class="progress-container hidden">
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <div id="progress-text" class="progress-text">0%</div>
+                </div>
+
+                <!-- Log Output -->
+                <div class="log-container">
+                    <h4>Activity Log</h4>
+                    <div id="log-output" class="log-output"></div>
+                </div>
+            </section>
+
+            <!-- Advanced Options (for custom firmware upload) -->
+            <section class="card">
+                <details>
+                    <summary><h3>🔧 Advanced: Upload Custom Firmware</h3></summary>
+                    <div class="file-upload">
+                        <label for="custom-firmware" class="btn btn-outline">
+                            <span class="btn-icon">📁</span>
+                            Choose .bin file
+                        </label>
+                        <input type="file" id="custom-firmware" accept=".bin" hidden>
+                        <span id="custom-filename" class="filename">No file selected</span>
+                    </div>
+                    <p class="note">Upload your own compiled .bin file</p>
+                </details>
+            </section>
+        </main>
+
+        <footer>
+            <p>Built with ❤️ using WebUSB API |
+                <a href="https://github.com/yourusername/KarplusStrongMachine" target="_blank">View on GitHub</a> |
+                <a href="README.md">Documentation</a>
+            </p>
+            <p class="small">Requires Chrome/Chromium browser with WebUSB support</p>
+        </footer>
+    </div>
+
+    <script type="module" src="dfu.js"></script>
+    <script type="module" src="flasher.js"></script>
+</body>
+</html>
