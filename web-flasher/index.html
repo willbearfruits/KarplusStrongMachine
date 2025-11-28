@@ -48,19 +48,19 @@
 
             <!-- Firmware Info -->
             <section class="card">
-                <h3>🎛️ Firmware: Multi-Scale Synthesizer</h3>
+                <h3>🎛️ Firmware: Digital Kalimba</h3>
                 <div class="firmware-info">
                     <h4>Features</h4>
                     <ul>
-                        <li><strong>5 Musical Scales:</strong> Pentatonic, Dorian, Chromatic, Kalimba, Just Intonation</li>
+                        <li><strong>5 Musical Scales:</strong> Pentatonic Major, Dorian, Chromatic, Kalimba, Just Intonation</li>
                         <li><strong>7 Buttons:</strong> Full polyphony, all notes play simultaneously</li>
-                        <li><strong>Transpose:</strong> ±12 semitones (full octave range)</li>
-                        <li><strong>OLED Display:</strong> Shows current scale, transpose, active notes</li>
-                        <li><strong>Controls:</strong> Brightness, decay, LFO rate & depth</li>
-                        <li><strong>Low CPU:</strong> ~10-15% usage, efficient Karplus-Strong synthesis</li>
+                        <li><strong>Octave Shift:</strong> -2 to +2 octaves (5 octave range) via A2</li>
+                        <li><strong>OLED Display:</strong> Shows current scale, octave, active notes</li>
+                        <li><strong>Controls:</strong> Brightness (A0), Decay (A1), Scale Select (A3), Reverb (A4/A5)</li>
+                        <li><strong>DSP:</strong> Karplus-Strong synthesis with stereo ReverbSc</li>
                     </ul>
                 </div>
-                <p class="note"><strong>Binary size:</strong> 104KB | <strong>Platform:</strong> STM32H750 (Daisy Seed)</p>
+                <p class="note"><strong>Binary size:</strong> ~115KB | <strong>Platform:</strong> STM32H750 (Daisy Seed)</p>
             </section>
 
             <!-- Connection and Flashing -->
@@ -123,7 +123,7 @@
 
         <footer>
             <p>Built with ❤️ using WebUSB API |
-                <a href="https://github.com/yourusername/KarplusStrongMachine" target="_blank">View on GitHub</a> |
+                <a href="https://github.com/willbearfruits/KarplusStrongMachine" target="_blank">View on GitHub</a> |
                 <a href="README.md">Documentation</a>
             </p>
             <p class="small">Requires Chrome/Chromium browser with WebUSB support</p>

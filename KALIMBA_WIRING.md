@@ -23,13 +23,13 @@ Button Wiring (each button):
 
 | Button # | Note | Frequency | GPIO Pin | Physical Pin | Wiring |
 |----------|------|-----------|----------|--------------|--------|
-| 1 | G4 (Center) | 392 Hz | D15 | Pin 23 | D15 → Button → GND |
-| 2 | A3 (Left 1) | 220 Hz | D16 | Pin 24 | D16 → Button → GND |
-| 3 | B4 (Right 1) | 494 Hz | D17 | Pin 25 | D17 → Button → GND |
-| 4 | D4 (Left 2) | 294 Hz | D18 | Pin 26 | D18 → Button → GND |
-| 5 | E4 (Right 2) | 330 Hz | D19 | Pin 27 | D19 → Button → GND |
-| 6 | G3 (Left 3) | 196 Hz | D20 | Pin 28 | D20 → Button → GND |
-| 7 | A4 (Right 3) | 440 Hz | D21 | Pin 29 | D21 → Button → GND |
+| 1 | G4 (Center) | 392 Hz | D1 | Pin 2 | D1 → Button → GND |
+| 2 | A3 (Left 1) | 220 Hz | D2 | Pin 3 | D2 → Button → GND |
+| 3 | B4 (Right 1) | 494 Hz | D3 | Pin 4 | D3 → Button → GND |
+| 4 | D4 (Left 2) | 294 Hz | D4 | Pin 5 | D4 → Button → GND |
+| 5 | E4 (Right 2) | 330 Hz | D5 | Pin 6 | D5 → Button → GND |
+| 6 | G3 (Left 3) | 196 Hz | D6 | Pin 7 | D6 → Button → GND |
+| 7 | A4 (Right 3) | 440 Hz | D7 | Pin 8 | D7 → Button → GND |
 
 ### Traditional Kalimba Layout
 
@@ -72,8 +72,8 @@ Connect 6 potentiometers (10kΩ linear recommended) to analog inputs:
 | 2 | A1 | Pin 16 | Global Decay/Sustain | 0.5 - 1.0 (short - long) |
 | 3 | A2 | Pin 17 | Reverb Amount | 0 - 100% (dry - wet) |
 | 4 | A3 | Pin 18 | Reverb Size | 0.7 - 0.95 (small - large room) |
-| 5 | A4 | Pin 19 | LFO Rate | 0.1 - 20 Hz (vibrato speed) |
-| 6 | A5 | Pin 20 | LFO Depth | 0 - 15% (vibrato amount) |
+| 5 | A4 | Pin 19 | Reverb Size | 0.6 - 0.999 (decay/feedback) |
+| 6 | A5 | Pin 20 | Scale Select | 5 scales |
 
 ## OLED Display (Optional)
 
@@ -116,13 +116,13 @@ Power the Daisy Seed via:
                         │    Daisy Seed Board     │
                         │                         │
     Buttons:            │                         │
-    [1] ────────────────│ D15 (23)                │
-    [2] ────────────────│ D16 (24)                │
-    [3] ────────────────│ D17 (25)                │
-    [4] ────────────────│ D18 (26)                │
-    [5] ────────────────│ D19 (27)                │
-    [6] ────────────────│ D20 (28)                │
-    [7] ────────────────│ D21 (29)                │
+    [1] ────────────────│ D1 (2)                  │
+    [2] ────────────────│ D2 (3)                  │
+    [3] ────────────────│ D3 (4)                  │
+    [4] ────────────────│ D4 (5)                  │
+    [5] ────────────────│ D5 (6)                  │
+    [6] ────────────────│ D6 (7)                  │
+    [7] ────────────────│ D7 (8)                  │
          │              │                         │
          └─── All to GND (40)                     │
                         │                         │
