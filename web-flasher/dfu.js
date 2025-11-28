@@ -167,7 +167,13 @@ class DFUDevice {
         let attempts = 0;
         const maxAttempts = 500; // Increased from 100 to allow for slower operations
 
-        while (status.state !== DFU_STATE.DFU_IDLE && attempts < maxAttempts) {
+        // Accept either IDLE or DNLOAD_IDLE as "Ready" states
+        // IDLE: Ready for new command sequence
+        // DNLOAD_IDLE: Ready for next block in current sequence
+        while (status.state !== DFU_STATE.DFU_IDLE && 
+               status.state !== DFU_STATE.DFU_DNLOAD_IDLE && 
+               attempts < maxAttempts) {
+            
             if (status.state === DFU_STATE.DFU_ERROR) {
                 await this.clearStatus();
             }
@@ -181,7 +187,7 @@ class DFUDevice {
         }
 
         if (attempts >= maxAttempts) {
-            throw new Error('Timeout waiting for device to be ready');
+            throw new Error(`Timeout waiting for device to be ready (State: ${status.state})`);
         }
 
         return status;
