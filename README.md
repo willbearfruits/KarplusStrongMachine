@@ -1,38 +1,43 @@
 # Digital Kalimba for Daisy Seed
 
-A 7-button polyphonic kalimba instrument using Karplus-Strong physical modeling synthesis with traditional G Major Pentatonic tuning.
+A 7-button polyphonic synthesizer using Karplus-Strong physical modeling synthesis with 5 selectable musical scales.
 
 ## Features
 
 - **Full Polyphony:** All 7 notes can play simultaneously
-- **Authentic Tuning:** G Major Pentatonic (traditional kalimba scale)
-- **Frequency-Dependent Decay:** Low notes sustain longer, high notes decay faster (just like a real kalimba)
-- **Built-in Reverb:** Simulates resonator box for rich, ambient sound
-- **Real-Time Control:** 6 potentiometers for brightness, decay, reverb, and LFO modulation
-- **OLED Display:** Shows active notes, tuning, and parameters
-- **Low CPU Usage:** ~12-15% CPU (85% available for expansion)
-- **Low Latency:** ~0.08ms (4-sample blocks @ 48kHz)
+- **5 Musical Scales:** Pentatonic Major, Dorian, Chromatic, Kalimba, Just Intonation
+- **Octave Shift:** -2 to +2 octaves (5 octave range)
+- **Frequency-Dependent Decay:** Low notes sustain longer, high notes decay faster
+- **Stereo Reverb:** High-quality ReverbSc for spatial depth
+- **Real-Time Control:** Brightness, Decay, Scale Select, Reverb Mix/Time
+- **OLED Display:** Shows current scale, octave, and active notes
+- **Low Latency:** ~0.08ms
 
-## Quick Start
+## Quick Start (Easiest Way)
+
+**Flash directly from your browser! No software installation required.**
+
+1.  **Connect** your Daisy Seed to your computer via USB.
+2.  **Visit the Web Flasher:**  
+    👉 **[https://willbearfruits.github.io/KarplusStrongMachine/web-flasher/](https://willbearfruits.github.io/KarplusStrongMachine/web-flasher/)**
+3.  **Put Daisy in Bootloader Mode:**
+    *   Hold **BOOT** button.
+    *   Press **RESET** button.
+    *   Release **BOOT** button.
+4.  Click **"Connect to Daisy Seed"** and select your device.
+5.  Click **"Flash Firmware"**.
+6.  Press **RESET** to play!
+
+---
+
+## Alternative: Build from Source (CLI)
 
 ### 1. Build and Upload
 
 ```bash
 cd ~/Documents/KarplusStrongMachine
-./build-and-upload-kalimba.sh
+make program-dfu
 ```
-
-### 2. Enter Bootloader Mode
-
-1. Hold **BOOT** button on Daisy Seed
-2. Press **RESET** button (while holding BOOT)
-3. Release **BOOT** button
-4. LED should pulse slowly
-5. Press ENTER in terminal
-
-### 3. Play!
-
-After upload, press RESET button. The kalimba is now ready to play!
 
 ## Hardware Setup
 
@@ -110,12 +115,12 @@ Traditional kalimba center-out alternating pattern:
 
 | Control | Function | Effect |
 |---------|----------|--------|
-| **A0 - Brightness** | Tone color | CCW: Warmer, darker / CW: Brighter, more treble |
-| **A1 - Decay** | Sustain time | CCW: Shorter decay / CW: Longer sustain |
-| **A2 - Reverb Amount** | Dry/wet mix | CCW: Dry / CW: Full reverb |
-| **A3 - Reverb Size** | Room size | CCW: Small room / CW: Large hall |
-| **A4 - LFO Rate** | Vibrato speed | CCW: Slow / CW: Fast |
-| **A5 - LFO Depth** | Vibrato amount | CCW: None / CW: Maximum |
+| **A0 - Brightness** | Tone color | CCW: Warmer, darker / CW: Brighter, metallic |
+| **A1 - Decay** | Sustain time | CCW: Short plucks / CW: Long sustain |
+| **A2 - Octave Shift** | Pitch range | Center: Normal. Left: -1/-2 oct. Right: +1/+2 oct |
+| **A3 - Scale Select** | Musical Scale | 5 regions: Pentatonic -> Dorian -> Chromatic -> Kalimba -> Just Intonation |
+| **A4 - Reverb Mix** | Dry/wet mix | CCW: Dry / CW: Full reverb |
+| **A5 - Reverb Time** | Room size | CCW: Small room / CW: Large hall |
 
 ## Tips for Playing
 

@@ -284,20 +284,24 @@ class DFUDevice {
             }
 
             // Send zero-length download to exit DFU mode
-            progressCallback({ stage: 'finalize', percent: 90, message: 'Finalizing...' });
-            await this.download(new Uint8Array(0), 0);
+            progressCallback({ stage: 'finalize', percent: 100, message: 'Finalizing...' });
+            try {
+                await this.download(new Uint8Array(0), 0);
+            } catch (e) {
+                // Ignore errors here - device might reboot immediately
+            }
 
-            // Wait for manifest
-            let status = await this.getStatus();
-            while (status.state === DFU_STATE.DFU_MANIFEST_SYNC ||
-                   status.state === DFU_STATE.DFU_MANIFEST) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                try {
+            // Wait for manifest - but be tolerant of disconnection
+            try {
+                let status = await this.getStatus();
+                while (status.state === DFU_STATE.DFU_MANIFEST_SYNC ||
+                       status.state === DFU_STATE.DFU_MANIFEST) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
                     status = await this.getStatus();
-                } catch (e) {
-                    // Device may disconnect during manifest
-                    break;
                 }
+            } catch (e) {
+                // Device disconnected/rebooted - this is expected success!
+                console.log('Device rebooted successfully');
             }
 
             progressCallback({ stage: 'complete', percent: 100, message: 'Flash complete!' });
