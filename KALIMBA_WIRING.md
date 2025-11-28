@@ -70,10 +70,10 @@ Connect 6 potentiometers (10kΩ linear recommended) to analog inputs:
 |-----|---------|--------------|----------|-------|
 | 1 | A0 | Pin 15 | Global Brightness | 0.5 - 1.0 (darker - brighter) |
 | 2 | A1 | Pin 16 | Global Decay/Sustain | 0.5 - 1.0 (short - long) |
-| 3 | A2 | Pin 17 | Reverb Amount | 0 - 100% (dry - wet) |
-| 4 | A3 | Pin 18 | Reverb Size | 0.7 - 0.95 (small - large room) |
-| 5 | A4 | Pin 19 | Reverb Size | 0.6 - 0.999 (decay/feedback) |
-| 6 | A5 | Pin 20 | Scale Select | 5 scales |
+| 3 | A2 | Pin 17 | Octave Shift | -2 to +2 octaves (5 zones) |
+| 4 | A3 | Pin 18 | Scale Select | 5 scales (Pentatonic, Dorian, Chromatic, Kalimba, Just) |
+| 5 | A4 | Pin 19 | Reverb Mix | 0 - 100% (dry - wet) |
+| 6 | A5 | Pin 20 | Reverb Time | 0.6 - 0.999 (decay/feedback) |
 
 ## OLED Display (Optional)
 
@@ -127,12 +127,12 @@ Power the Daisy Seed via:
          └─── All to GND (40)                     │
                         │                         │
     Pots (wipers):      │                         │
-    Pot 1 ──────────────│ A0 (15)                 │
-    Pot 2 ──────────────│ A1 (16)                 │
-    Pot 3 ──────────────│ A2 (17)                 │
-    Pot 4 ──────────────│ A3 (18)                 │
-    Pot 5 ──────────────│ A4 (19)                 │
-    Pot 6 ──────────────│ A5 (20)                 │
+    Pot 1 (Bright) ─────│ A0 (15)                 │
+    Pot 2 (Decay) ──────│ A1 (16)                 │
+    Pot 3 (Octave) ─────│ A2 (17)                 │
+    Pot 4 (Scale) ──────│ A3 (18)                 │
+    Pot 5 (Rev Mix) ────│ A4 (19)                 │
+    Pot 6 (Rev Time) ───│ A5 (20)                 │
                         │                         │
     OLED:               │                         │
     SCL ────────────────│ D11 (12)                │
@@ -272,8 +272,8 @@ With 88% CPU headroom, you can add:
 
 ## Quick Reference: Pin Summary
 
-**Buttons (all to GND):** D15, D16, D17, D18, D19, D20, D21
-**Pots (wipers):** A0, A1, A2, A3, A4, A5
+**Buttons (all to GND):** D1 (Pin 2), D2 (3), D3 (4), D4 (5), D5 (6), D6 (7), D7 (8)
+**Pots (wipers):** A0(Bright), A1(Decay), A2(Octave), A3(Scale), A4(Mix), A5(Time)
 **OLED I2C:** D11 (SCL), D12 (SDA)
 **Power:** USB or VIN (Pin 39)
 **Audio:** Pins 19 (L), 20 (R), 40 (GND)

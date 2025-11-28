@@ -44,13 +44,13 @@ make program-dfu
 ### Minimum Required Wiring
 
 **7 Buttons (to GND):**
-- D15 (Pin 23) - G4 (Center note)
-- D16 (Pin 24) - A3
-- D17 (Pin 25) - B4
-- D18 (Pin 26) - D4
-- D19 (Pin 27) - E4
-- D20 (Pin 28) - G3 (Lowest note)
-- D21 (Pin 29) - A4
+- D1 (Pin 2) - G4 (Center note)
+- D2 (Pin 3) - A3
+- D3 (Pin 4) - B4
+- D4 (Pin 5) - D4
+- D5 (Pin 6) - E4
+- D6 (Pin 7) - G3 (Lowest note)
+- D7 (Pin 8) - A4
 
 Each button connects GPIO pin to GND (momentary push buttons, normally open).
 
@@ -64,10 +64,10 @@ Each button connects GPIO pin to GND (momentary push buttons, normally open).
 **6 Potentiometers (10kΩ, wiper to ADC pin):**
 - A0 (Pin 15) - Global Brightness
 - A1 (Pin 16) - Global Decay/Sustain
-- A2 (Pin 17) - Reverb Amount
-- A3 (Pin 18) - Reverb Size
-- A4 (Pin 19) - LFO Rate
-- A5 (Pin 20) - LFO Depth
+- A2 (Pin 17) - Octave Shift
+- A3 (Pin 18) - Scale Select
+- A4 (Pin 19) - Reverb Mix
+- A5 (Pin 20) - Reverb Time
 
 **OLED Display (I2C, 0.96" SSD1306):**
 - D11 (Pin 12) - SCL
@@ -137,9 +137,10 @@ Traditional kalimba center-out alternating pattern:
 
 ### Sound Shaping
 - **Plucked sound:** Brightness high (A0 CW), Decay medium (A1 center)
-- **Bell-like:** Brightness very high (A0 full CW), Reverb high (A2/A3 CW)
-- **Warm pad:** Brightness low (A0 CCW), Decay high (A1 CW), Reverb high (A2 CW)
-- **Subtle vibrato:** LFO Depth at 10-20% (A5 slight CW), LFO Rate slow (A4 CCW)
+- **Bell-like:** Brightness very high (A0 full CW), Reverb high (A4/A5 CW)
+- **Warm pad:** Brightness low (A0 CCW), Decay high (A1 CW), Reverb high (A4 CW)
+- **Octave Jump:** Turn A2 left/right to shift range down/up
+- **Scale Change:** Turn A3 to explore different moods (Dorian, Chromatic, etc.)
 
 ## Technical Specifications
 
@@ -224,12 +225,11 @@ With 85% CPU remaining, you can add:
 ## Files
 
 - **DigitalKalimba.cpp** - Main source code
-- **Makefile.kalimba** - Build configuration
-- **build-kalimba.sh** - Build script
-- **upload-kalimba.sh** - Upload script
-- **build-and-upload-kalimba.sh** - Combined workflow
+- **Makefile** - Build configuration
+- **web-flasher/** - WebUSB firmware uploader
 - **KALIMBA_WIRING.md** - Complete wiring guide
-- **CLAUDE.md** - Project documentation
+- **build.sh / upload.sh** - Convenience scripts
+
 
 ## Credits
 
