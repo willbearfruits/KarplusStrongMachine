@@ -1,6 +1,9 @@
 # Digital Kalimba - 7-Button Karplus-Strong Instrument
 TARGET = DigitalKalimba
 
+# Enable LGPL library for ReverbSc
+USE_DAISYSP_LGPL = 1
+
 # Sources
 CPP_SOURCES = DigitalKalimba.cpp
 
