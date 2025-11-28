@@ -165,17 +165,16 @@ class DFUDevice {
     async waitForReady() {
         let status = await this.getStatus();
         let attempts = 0;
-        const maxAttempts = 100;
+        const maxAttempts = 500; // Increased from 100 to allow for slower operations
 
         while (status.state !== DFU_STATE.DFU_IDLE && attempts < maxAttempts) {
             if (status.state === DFU_STATE.DFU_ERROR) {
                 await this.clearStatus();
             }
 
-            // Wait for poll timeout
-            if (status.pollTimeout > 0) {
-                await new Promise(resolve => setTimeout(resolve, status.pollTimeout));
-            }
+            // Wait for poll timeout or default minimum to prevent tight loop
+            const waitTime = status.pollTimeout > 0 ? status.pollTimeout : 10;
+            await new Promise(resolve => setTimeout(resolve, waitTime));
 
             status = await this.getStatus();
             attempts++;
