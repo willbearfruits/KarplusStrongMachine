@@ -25,7 +25,7 @@ This tool requires a browser with **WebUSB support**:
 
 ### Online (GitHub Pages)
 
-Visit: **https://yourusername.github.io/KarplusStrongMachine/web-flasher/**
+Visit: **https://willbearfruits.github.io/KarplusStrongMachine/web-flasher/**
 
 ### Local Development
 
@@ -103,7 +103,7 @@ web-flasher/
    git push
    ```
 
-4. **Access** at: `https://yourusername.github.io/yourrepo/web-flasher/`
+4. **Access** at: `https://willbearfruits.github.io/KarplusStrongMachine/web-flasher/`
 
 ## Security Notes
 
