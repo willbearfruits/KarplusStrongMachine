@@ -1,10 +1,6 @@
 # Digital Kalimba - 7-Button Karplus-Strong Instrument
 TARGET = DigitalKalimba
 
-# Use SRAM bootloader for 480KB program space (3.7x more than internal flash)
-# Options: BOOT_QSPI (8MB), BOOT_SRAM (480KB), or omit for internal 128KB
-# APP_TYPE = BOOT_SRAM  # Disabled - SRAM linker has .bss overflow issue with ReverbSc
-
 # Enable LGPL library for ReverbSc
 USE_DAISYSP_LGPL = 1
 
