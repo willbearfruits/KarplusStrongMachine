@@ -54,7 +54,7 @@ class DFUDevice {
     constructor() {
         this.device = null;
         this.interfaceNumber = 0;
-        this.transferSize = 2048; // STM32 typical transfer size
+        this.transferSize = 1024; // Reduced to 1024 for better stability
         this.startAddress = 0x08000000; // STM32H750 Flash start address
     }
 
@@ -180,6 +180,12 @@ class DFUDevice {
 
             // Wait for poll timeout or default minimum to prevent tight loop
             const waitTime = status.pollTimeout > 0 ? status.pollTimeout : 10;
+            
+            // Debug logging for long operations (like erase)
+            if (attempts % 10 === 0) {
+                console.log(`Waiting for ready... State: ${status.state}, Status: ${status.status}, Wait: ${waitTime}ms, Attempt: ${attempts}`);
+            }
+
             await new Promise(resolve => setTimeout(resolve, waitTime));
 
             status = await this.getStatus();
