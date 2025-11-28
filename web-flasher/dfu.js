@@ -259,6 +259,21 @@ class DFUDevice {
             await this.erase(this.startAddress);
             progressCallback({ stage: 'erase', percent: 10, message: 'Flash erased' });
 
+            // Wait a moment for the device to stabilize after mass erase
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Check status to ensure we are still connected and ready
+            try {
+                const status = await this.getStatus();
+                if (status.state === DFU_STATE.DFU_ERROR) {
+                    await this.clearStatus();
+                }
+            } catch (e) {
+                console.warn('Status check failed between erase and write:', e);
+            }
+
+            progressCallback({ stage: 'write', percent: 10, message: 'Preparing to write...' });
+
             // Set address again for writing
             await this.setAddress(this.startAddress);
 
