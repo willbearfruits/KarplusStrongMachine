@@ -5,6 +5,12 @@ Designed as both an **instrument** and a **teaching tool** for exploring physica
 
 **Status:** Workshop-ready; evolving with student feedback.
 
+## Support
+
+Most of my work stays free and open-source.
+Support early access, live sessions, and workshop-time:
+https://www.patreon.com/Seriousshit
+
 ---
 
 ## 🎯 What this project is
